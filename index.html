@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ScoreLine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Barvy, typografii a rozestupy měnit tady dole v :root — layout níže se jich nemusíš dotýkat */
+  :root {
+    --bg: #0d1117;
+    --surface: #151b23;
+    --surface-2: #1c2430;
+    --line: #262e3a;
+    --text: #e8ebef;
+    --muted: #8a94a3;
+    --accent: #5b8def;
+    --accent-soft: rgba(91,141,239,0.14);
+    --live: #34c281;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f5f6f8; --surface: #ffffff; --surface-2: #eef0f3;
+      --line: #dfe3e8; --text: #12161c; --muted: #5b6472;
+      --accent: #3865c9; --accent-soft: rgba(56,101,201,0.10); --live: #1e9e63;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1117; --surface: #151b23; --surface-2: #1c2430;
+    --line: #262e3a; --text: #e8ebef; --muted: #8a94a3;
+    --accent: #5b8def; --accent-soft: rgba(91,141,239,0.14); --live: #34c281;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.5;
+  }
+  a { color: inherit; }
+  header {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+    background: var(--surface); border-bottom: 1px solid var(--line);
+    padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: baseline; gap: 8px; }
+  .brand .mark {
+    width: 10px; height: 10px; border-radius: 2px; background: var(--accent);
+    display: inline-block; transform: rotate(45deg);
+  }
+  .brand span.name { font-weight: 800; font-size: 1.05rem; letter-spacing: -0.01em; }
+  .brand span.tag { color: var(--muted); font-size: 0.8rem; }
+  nav { display: flex; gap: 18px; font-size: 0.88rem; color: var(--muted); }
+  nav a { text-decoration: none; }
+  nav a:hover { color: var(--text); }
+
+  .ticker-wrap {
+    background: var(--surface-2); border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+  }
+  .ticker {
+    display: flex; gap: 0; min-width: max-content;
+    padding: 10px 20px;
+  }
+  .ticker-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 18px; border-right: 1px solid var(--line);
+    font-size: 0.82rem; white-space: nowrap;
+  }
+  .ticker-item:last-child { border-right: none; }
+  .dot-live {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--live);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--live) 25%, transparent);
+  }
+  .ticker-game { color: var(--muted); }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  .hero { padding: 28px 0 8px; }
+  .hero h1 {
+    font-size: clamp(1.6rem, 4vw, 2.3rem);
+    margin: 0 0 8px; letter-spacing: -0.015em; font-weight: 800;
+  }
+  .hero p { color: var(--muted); margin: 0; max-width: 60ch; font-size: 0.95rem; }
+
+  .layout { display: grid; grid-template-columns: 1fr 320px; gap: 28px; margin-top: 26px; }
+  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+
+  section.block { margin-bottom: 34px; }
+  .block h2 {
+    font-size: 0.78rem; font-weight: 700; color: var(--muted);
+    margin: 0 0 14px; letter-spacing: 0.01em;
+    border-bottom: 1px solid var(--line); padding-bottom: 10px;
+  }
+
+  .news-card {
+    display: grid; grid-template-columns: 64px 1fr; gap: 14px;
+    padding: 16px 0; border-bottom: 1px solid var(--line);
+  }
+  .news-card:last-child { border-bottom: none; }
+  .game-chip {
+    align-self: start; font-size: 0.68rem; font-weight: 700;
+    padding: 4px 0; text-align: center; border-radius: 4px;
+    background: var(--accent-soft); color: var(--accent);
+  }
+  .news-card h3 { margin: 0 0 6px; font-size: 1rem; font-weight: 600; line-height: 1.35; }
+  .news-card p { margin: 0; color: var(--muted); font-size: 0.88rem; }
+  .news-meta { margin-top: 8px; font-size: 0.76rem; color: var(--muted); }
+
+  .cal-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .cal-table th {
+    text-align: left; font-weight: 600; color: var(--muted);
+    padding: 6px 8px; border-bottom: 1px solid var(--line); font-size: 0.72rem;
+  }
+  .cal-table td { padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .cal-table tr:last-child td { border-bottom: none; }
+  .cal-event { font-weight: 600; }
+  .cal-sub { color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
+  .status { display: inline-block; font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; }
+  .status.live { background: color-mix(in srgb, var(--live) 18%, transparent); color: var(--live); }
+  .status.upcoming { background: var(--surface-2); color: var(--muted); }
+
+  .side-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; overflow-x: auto; }
+
+  footer { max-width: 1080px; margin: 0 auto; padding: 18px 20px 40px; color: var(--muted); font-size: 0.78rem; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="mark"></span>
+    <!-- NÁZEV STRÁNKY, např. "ScoreLine" -->
+    <span class="name"> ScoreLine </span>
+    <!-- KRÁTKÝ PODTITULEK/SLOGAN vedle názvu -->
+    <span class="tag"> Esport scores for you </span>
+  </div>
+  <nav>
+    <!-- POLOŽKY MENU (odkazy na sekce níže, href musí odpovídat id="..." u sekcí) -->
+    <a href="#news">News</a>
+    <a href="#calendar">Calendar</a>
+    <a href="#games">Games</a>
+  </nav>
+</header>
+
+<div class="ticker-wrap">
+  <div class="ticker">
+    <!-- ZDE VLOŽ 1 ŘÁDEK PRO KAŽDOU AKTUÁLNÍ/ŽIVOU UDÁLOST (kopíruj tento blok tolikrát, kolik potřebuješ) -->
+    <div class="ticker-item">
+      VALORANT Champions 2026
+      <span class="dot-live"></span> </div>
+      <div class="ticker-item">
+      PGL Wallachia Season 9 – Dota 2
+      <span class="dot-live"></span> </div> 
+        <div class="ticker-item">
+      CCT 2026 South America Series 6 – CS2
+      <span class="dot-live"></span> </div>
+          <div class="ticker-item">
+      ESEA Season 58 Europe Finals – CS2
+      <span class="dot-live"></span> </div>
+            <div class="ticker-item">
+      European Pro League Series 9 – CS2
+      <span class="dot-live"></span> </div>
+      <!-- ZKRATKA HRY, např. "CS2" -->
+      <span class="ticker-game">CS2</span>
+      <!-- KRÁTKÝ POPIS DĚNÍ, např. "PGL Masters — kvalifikace probíhají" -->
+    ESL Pro League Starting October 3rd
+    <span class="ticker-game">Chess</span>
+    Liquid takes the EWC one more time
+  </div>
+  </div>
+</div>
+
+<main>
+  <div class="hero">
+    <!-- HLAVNÍ NADPIS STRÁNKY -->
+    <h1>Home of Esports</h1>
+    <!-- KRÁTKÝ POPIS POD NADPISEM (1–2 věty, co stránka nabízí) -->
+    <p>This is the page where you should find everything</p>
+  </div>
+
+  <div class="layout">
+    <div>
+      <section class="block" id="news">
+        <!-- NADPIS SEKCE S NOVINKAMI, např. "Novinky" -->
+        <h2>News</h2>
+
+        <!-- ZDE VLOŽ JEDNU KARTU PRO KAŽDOU NOVINKU (kopíruj celý <article> blok) -->
+        <article class="news-card">
+          <!-- ZKRATKA HRY, např. "CS2", "LoL", "DOTA" -->
+          <span class="game-chip">CS2</span>
+          <div>
+            <!-- TITULEK NOVINKY -->
+            <h3>Problems in ESEA Season 58 EMEA Finals!</h3>
+            <!-- TEXT NOVINKY (2–4 věty) -->
+            <p>Problems with bracket in this tournament as Grand Final had to be postponed! It is because Fever Squad have been disqualified for ban evasion.</p>
+            <!-- DATUM / MÍSTO KONÁNÍ -->
+            <div class="news-meta">27. 9. 2026</div>
+          </div>
+        </article>
+        <article class="news-card">
+          <!-- ZKRATKA HRY, např. "CS2", "LoL", "DOTA" -->
+          <span class="game-chip">CS2</span>
+          <div>
+            <!-- TITULEK NOVINKY -->
+            <h3>ESL Pro League (CS2) starting October 3rd</h3>
+            <!-- TEXT NOVINKY (2–4 věty) -->
+            <p>ESL Pro League is coming and the biggest favourites are Team Spirit and Falcons. Watch all the matches and results on ScoreLine!</p>
+            <!-- DATUM / MÍSTO KONÁNÍ -->
+            <div class="news-meta">27. 9. 2026</div>
+          </div>
+        </article>
+        <article class="news-card">
+          <!-- ZKRATKA HRY, např. "CS2", "LoL", "DOTA" -->
+          <span class="game-chip">Chess</span>
+          <div>
+            <!-- TITULEK NOVINKY -->
+            <h3>Liquid takes the EWC one more time</h3>
+            <!-- TEXT NOVINKY (2–4 věty) -->
+            <p>Liquid managed to fight to the finals and win EWC with Magnus Carlsen one more time!</p>
+            <!-- DATUM / MÍSTO KONÁNÍ -->
+            <div class="news-meta">15. 8. 2026</div>
+          </div>
+        </article>
+      </section>
+    </div>
+
+    <div>
+      <section class="block" id="calendar">
+        <!-- NADPIS SEKCE S KALENDÁŘEM, např. "Kalendář hlavních turnajů" -->
+        <h2>Calendar</h2>
+        <div class="side-card">
+          <table class="cal-table">
+            <thead>
+              <tr><th>Tournament</th><th>Date</th></tr>
+            </thead>
+            <tbody>
+              <!-- ZDE VLOŽ JEDEN <tr> PRO KAŽDÝ TURNAJ V KALENDÁŘI (kopíruj celý blok) -->
+              <tr onclick="window.location.href='Turnaj1.html'">
+                <td>
+                  <!-- NÁZEV TURNAJE -->
+                  <div class="cal-event">VALORANT Champions 2026</div>
+                  <!-- MÍSTO A/NEBO PRIZE POOL -->
+                  <div class="cal-sub">Shanghai, China - Prizepool: $2,25M</div>
+                </td>
+                <td>
+                  <!-- STAV: "live" nebo "upcoming" v class, text uvnitř např. "probíhá" / "brzy" -->
+                  <span class="status live">Live</span>
+                  <!-- VOLITELNĚ: datum ukončení/začátku -->
+                  <div class="cal-sub">24. 9. - 18. 10.</div>
+                </td>
+              </tr>
+              <tr onclick="window.location.href='Turnaj2.html'">
+                <td>
+                  <!-- NÁZEV TURNAJE -->
+                  <div class="cal-event">PGL Wallachia Season 9 - Dota 2</div>
+                  <!-- MÍSTO A/NEBO PRIZE POOL -->
+                  <div class="cal-sub">Bucharest, Romania - Prizepool: $1M</div>
+                </td>
+                <td>
+                  <!-- STAV: "live" nebo "upcoming" v class, text uvnitř např. "probíhá" / "brzy" -->
+                  <span class="status live">Live</span>
+                  <!-- VOLITELNĚ: datum ukončení/začátku -->
+                  <div class="cal-sub">19. 9. - 27. 9.</div>
+                </td>
+              </tr>
+              <tr onclick="window.location.href='Turnaj3.html'">
+                <td>
+                  <!-- NÁZEV TURNAJE -->
+                  <div class="cal-event">CCT 2026 South America Series 6 - CS2</div>
+                  <!-- MÍSTO A/NEBO PRIZE POOL -->
+                  <div class="cal-sub">Online (SA Only) - Prizepool: $15,000</div>
+                </td>
+                <td>
+                  <!-- STAV: "live" nebo "upcoming" v class, text uvnitř např. "probíhá" / "brzy" -->
+                  <span class="status live">Live</span>
+                  <!-- VOLITELNĚ: datum ukončení/začátku -->
+                  <div class="cal-sub">22. 9. - 4. 10.</div>
+                </td>
+              </tr>
+              <tr onclick="window.location.href='Turnaj4.html'">
+                <td>
+                  <!-- NÁZEV TURNAJE -->
+                  <div class="cal-event">ESEA Season 58 Europe Finals - CS2</div>
+                  <!-- MÍSTO A/NEBO PRIZE POOL -->
+                  <div class="cal-sub">Online (EU Only) - Prizepool: $31,500</div>
+                </td>
+                <td>
+                  <!-- STAV: "live" nebo "upcoming" v class, text uvnitř např. "probíhá" / "brzy" -->
+                  <span class="status live">Live</span>
+                  <!-- VOLITELNĚ: datum ukončení/začátku -->
+                  <div class="cal-sub">25. 9. - 27. 9.</div>
+                </td>
+              </tr>
+              <tr onclick="window.location.href='Turnaj5.html'">
+                <td>
+                  <!-- NÁZEV TURNAJE -->
+                  <div class="cal-event">European Pro League Series 9 - CS2</div>
+                  <!-- MÍSTO A/NEBO PRIZE POOL -->
+                  <div class="cal-sub">Online (EU Only) - Prizepool: $20,000</div>
+                </td>
+                <td>
+                  <!-- STAV: "live" nebo "upcoming" v class, text uvnitř např. "probíhá" / "brzy" -->
+                  <span class="status live">Live</span>
+                  <!-- VOLITELNĚ: datum ukončení/začátku -->
+                  <div class="cal-sub">12. 9. - 30. 9.</div>
+                </td>
+              </tr>
+              <tr onclick="window.location.href='TournamentUpcoming1.html'">
+                <td>
+                  <!-- NÁZEV TURNAJE -->
+                  <div class="cal-event">ESL Pro League Season 24 - CS2</div>
+                  <!-- MÍSTO A/NEBO PRIZE POOL -->
+                  <div class="cal-sub">Katowice, Poland - Prizepool: $1M</div>
+                </td>
+                <td>
+                  <!-- STAV: "live" nebo "upcoming" v class, text uvnitř např. "probíhá" / "brzy" -->
+                  <span class="status upcoming">Upcoming</span>
+                  <!-- VOLITELNĚ: datum ukončení/začátku -->
+                  <div class="cal-sub">3. 10. - 11. 10.</div>
+                </td>
+              </tr>
+              <tr onclick="window.location.href='TournamentUpcoming2.html'">
+                <td>
+                  <!-- NÁZEV TURNAJE -->
+                  <div class="cal-event">Blast Slam VIII - DOTA 2</div>
+                  <!-- MÍSTO A/NEBO PRIZE POOL -->
+                  <div class="cal-sub">St. Julians, Malta - Prizepool: $750,000</div>
+                </td>
+                <td>
+                  <!-- STAV: "live" nebo "upcoming" v class, text uvnitř např. "probíhá" / "brzy" -->
+                  <span class="status upcoming">Upcoming</span>
+                  <!-- VOLITELNĚ: datum ukončení/začátku -->
+                  <div class="cal-sub">29. 9. - 11. 10.</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="block" id="games">
+        <!-- NADPIS SEKCE SE SEZNAMEM HER, např. "Sledované scény" -->
+        <h2>Games</h2>
+        <div class="side-card" style="display:flex; flex-wrap:wrap; gap:8px;">
+          <!-- ZDE VLOŽ JEDEN <span> PRO KAŽDOU HRU/SCÉNU, KTEROU POKRÝVÁŠ -->
+          <span class="game-chip" style="padding:6px 10px;">Counter-Strike 2</span>
+          <span class="game-chip" style="padding:6px 10px;">Dota 2</span>
+          <span class="game-chip" style="padding:6px 10px;">Valorant</span>
+          <span class="game-chip" style="padding:6px 10px;">Chess</span>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <!-- PATIČKA, např. název stránky + kdy byl obsah naposledy aktualizován -->
+  Last updated: 27. 9. 2026
+Sponsor: ZENTRAX E-Sports
+Proudly made in Czech Republic
+</footer>
+
+
+</body>
+</html>

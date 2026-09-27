@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VALORANT Champions 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Stejné proměnné jako na hlavní stránce — ať sedí barvy a styl */
+  :root {
+    --bg: #0d1117;
+    --surface: #151b23;
+    --surface-2: #1c2430;
+    --line: #262e3a;
+    --text: #e8ebef;
+    --muted: #8a94a3;
+    --accent: #5b8def;
+    --accent-soft: rgba(91,141,239,0.14);
+    --live: #34c281;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f5f6f8; --surface: #ffffff; --surface-2: #eef0f3;
+      --line: #dfe3e8; --text: #12161c; --muted: #5b6472;
+      --accent: #3865c9; --accent-soft: rgba(56,101,201,0.10); --live: #1e9e63;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1117; --surface: #151b23; --surface-2: #1c2430;
+    --line: #262e3a; --text: #e8ebef; --muted: #8a94a3;
+    --accent: #5b8def; --accent-soft: rgba(91,141,239,0.14); --live: #34c281;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.5;
+  }
+  a { color: inherit; }
+  header {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+    background: var(--surface); border-bottom: 1px solid var(--line);
+    padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: baseline; gap: 8px; text-decoration: none; }
+  .brand .mark {
+    width: 10px; height: 10px; border-radius: 2px; background: var(--accent);
+    display: inline-block; transform: rotate(45deg);
+  }
+  .brand span.name { font-weight: 800; font-size: 1.05rem; letter-spacing: -0.01em; }
+  .brand span.tag { color: var(--muted); font-size: 0.8rem; }
+  nav { display: flex; gap: 18px; font-size: 0.88rem; color: var(--muted); }
+  nav a { text-decoration: none; }
+  nav a:hover { color: var(--text); }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  /* Odkaz zpět na přehled */
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--muted); text-decoration: none; font-size: 0.85rem;
+    margin-bottom: 18px;
+  }
+  .back-link:hover { color: var(--text); }
+
+  /* Hero turnaje */
+  .tourney-hero {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 22px; margin-bottom: 30px;
+  }
+  .tourney-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .game-chip {
+    font-size: 0.68rem; font-weight: 700; padding: 4px 8px; border-radius: 4px;
+    background: var(--accent-soft); color: var(--accent);
+  }
+  .status { display: inline-block; font-size: 0.68rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+  .status.live { background: color-mix(in srgb, var(--live) 18%, transparent); color: var(--live); }
+  .status.upcoming { background: var(--surface-2); color: var(--muted); }
+  .status.finished { background: var(--surface-2); color: var(--muted); }
+  .tourney-hero h1 {
+    margin: 0 0 10px; font-size: clamp(1.5rem, 4vw, 2.1rem);
+    letter-spacing: -0.015em; font-weight: 800;
+  }
+  .tourney-meta {
+    display: flex; gap: 18px; flex-wrap: wrap; color: var(--muted); font-size: 0.86rem;
+  }
+  .tourney-meta strong { color: var(--text); }
+
+  .layout { display: grid; grid-template-columns: 1fr 300px; gap: 28px; }
+  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+
+  section.block { margin-bottom: 34px; }
+  .block h2 {
+    font-size: 0.78rem; font-weight: 700; color: var(--muted);
+    margin: 0 0 14px; letter-spacing: 0.01em;
+    border-bottom: 1px solid var(--line); padding-bottom: 10px;
+  }
+
+  /* O turnaji - text */
+  .about-text { color: var(--text); font-size: 0.92rem; }
+  .about-text p { margin: 0 0 10px; }
+
+  /* Zápasy / výsledky */
+  .match-row {
+    display: grid; grid-template-columns: 90px 1fr auto 1fr 70px; align-items: center;
+    gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line);
+    font-size: 0.88rem;
+  }
+  .match-row:last-child { border-bottom: none; }
+  .match-round { color: var(--muted); font-size: 0.76rem; }
+  .match-team { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+  .match-team.right { justify-content: flex-end; text-align: right; }
+  .match-score { font-weight: 800; text-align: center; min-width: 50px; }
+  .match-time { color: var(--muted); font-size: 0.76rem; text-align: right; }
+
+  /* Sidebar karty */
+  .side-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px; overflow-x: auto; margin-bottom: 18px;
+  }
+  .info-row { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 0.85rem; }
+  .info-row:last-child { border-bottom: none; }
+  .info-row span.label { color: var(--muted); }
+  .info-row span.value { font-weight: 600; text-align: right; }
+
+  /* Seznam týmů */
+  .team-list { display: flex; flex-direction: column; gap: 0; }
+  .team-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 0.87rem;
+  }
+  .team-row:last-child { border-bottom: none; }
+  .team-seed { color: var(--muted); font-size: 0.76rem; }
+
+  footer { max-width: 1080px; margin: 0 auto; padding: 18px 20px 40px; color: var(--muted); font-size: 0.78rem; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+
+<header>
+  <!-- ODKAZ ZPĚT NA HLAVNÍ STRÁNKU, href na tvůj index.html -->
+  <a class="brand" href="index.html">
+    <span class="mark"></span>
+    <!-- NÁZEV WEBU -->
+    <span class="name">ScoreLine</span>
+    <!-- SLOGAN -->
+    <span class="tag">Esports scores for you</span>
+  </a>
+  <nav>
+    <!-- STEJNÉ MENU JAKO NA HLAVNÍ STRÁNCE (odkazy zpět na index.html#sekce) -->
+    <a href="index.html#news">News</a>
+    <a href="index.html#calendar">Calendar</a>
+    <a href="index.html#games">Games</a>
+  </nav>
+</header>
+
+<main>
+  <!-- ODKAZ ZPĚT NA PŘEHLED TURNAJŮ -->
+  <a class="back-link" href="index.html">← Back to Homescreen<!-- text, např. "Zpět na přehled" --></a>
+
+  <div class="tourney-hero">
+    <div class="tourney-top">
+      <!-- ZKRATKA HRY, např. "CS2" -->
+      <span class="game-chip">VALO</span>
+      <!-- STAV: class "live" / "upcoming" / "finished", text uvnitř např. "probíhá" -->
+      <span class="status live">Live</span>
+    </div>
+    <!-- NÁZEV TURNAJE -->
+    <h1>Valorant Champions 2026</h1>
+    <div class="tourney-meta">
+      <!-- TERMÍN KONÁNÍ -->
+      <span>📅24. 9. - 18. 10.<strong></strong></span>
+      <!-- MÍSTO KONÁNÍ (nebo "Online") -->
+      <span>📍Shanghai, China <strong></strong></span>
+      <!-- PRIZE POOL -->
+      <span>💰$2,25M <strong></strong></span>
+      <!-- POČET TÝMŮ -->
+      <span>👥16 Teams<strong></strong></span>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div>
+      <section class="block">
+        <!-- NADPIS SEKCE, např. "O turnaji" -->
+        <h2>About tournament</h2>
+        <div class="about-text">
+          <!-- 2–4 ODSTAVCE POPISU TURNAJE (formát, kontext, proč je důležitý) -->
+          <p>VALORANT Champions 2026 (Also known as VCT Champions) is the crowning event of the VALORANT esports calendar. It is also the prestigious event of the  V26 Tour (V26无畏巡回 in Chinese), a year-long roadshow festival where  VCT events are held in China. -Liquipedia</p>
+        </div>
+      </section>
+
+      <section class="block">
+        <!-- NADPIS SEKCE, např. "Výsledky a zápasy" -->
+        <h2>Results and Matches</h2>
+
+        <!-- ZDE VLOŽ JEDEN ŘÁDEK PRO KAŽDÝ ZÁPAS (kopíruj celý .match-row blok) -->
+        <div class="match-row">
+          <!-- KOLO/FÁZE, např. "Grand Final" -->
+          <div class="match-round">Opening Matches</div>
+          <!-- TÝM 1 -->
+          <div class="match-team">100 Thieves</div>
+          <!-- SKÓRE, např. "2 : 1" (nebo "vs" pokud zápas ještě neproběhl) -->
+          <div class="match-score">2:0</div>
+          <!-- TÝM 2 -->
+          <div class="match-team right">T1</div>
+          <!-- DATUM/ČAS ZÁPASU -->
+          <div class="match-time">27. 9. 2026 - 11:00 CEST</div>
+        </div>
+        <div class="match-row">
+          <!-- KOLO/FÁZE, např. "Grand Final" -->
+          <div class="match-round">Opening Matches</div>
+          <!-- TÝM 1 -->
+          <div class="match-team">JD Gaming</div>
+          <!-- SKÓRE, např. "2 : 1" (nebo "vs" pokud zápas ještě neproběhl) -->
+          <div class="match-score">0:2</div>
+          <!-- TÝM 2 -->
+          <div class="match-team right">FUT Esports</div>
+          <!-- DATUM/ČAS ZÁPASU -->
+          <div class="match-time">27. 9. 2026 - 14:00 CEST</div>
+        </div>
+      </section>
+    </div>
+
+    <div>
+      <section class="block">
+        <!-- NADPIS SEKCE, např. "Info" -->
+        <h2>Info</h2>
+        <div class="side-card">
+          <!-- ZDE VLOŽ JEDEN ŘÁDEK PRO KAŽDOU INFORMACI (kopíruj .info-row) -->
+          <div class="info-row">
+            <!-- NÁZEV POLOŽKY, např. "Formát" -->
+            <span class="label">Format</span>
+            <!-- HODNOTA, např. "Dvojité vyřazení" -->
+            <span class="value">Double Elimination (4 Groups)</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="block">
+        <!-- NADPIS SEKCE, např. "Účastnící se týmy" -->
+        <h2>Teams</h2>
+        <div class="side-card">
+          <div class="team-list">
+            <!-- ZDE VLOŽ JEDEN ŘÁDEK PRO KAŽDÝ TÝM (kopíruj .team-row) -->
+            <div class="team-row">
+              <!-- NÁZEV TÝMU -->
+              <span>100 Thieves</span>
+              <!-- SEED / POŘADÍ, např. "#1" -->
+              <span class="team-seed">Group A</span>
+        </div>
+            <div class="team-row">
+              <!-- NÁZEV TÝMU -->
+              <span>LOUD</span>
+              <!-- SEED / POŘADÍ, např. "#1" -->
+              <span class="team-seed">Group B</span>
+        </div>
+            <div class="team-row">
+              <!-- NÁZEV TÝMU -->
+              <span>NRG</span>
+              <!-- SEED / POŘADÍ, např. "#1" -->
+              <span class="team-seed">Group D</span>
+        </div>
+            <div class="team-row">
+              <!-- NÁZEV TÝMU -->
+              <span>G2 Esports</span>
+              <!-- SEED / POŘADÍ, např. "#1" -->
+              <span class="team-seed">Group C</span>
+        </div>
+            <div class="team-row">
+              <!-- NÁZEV TÝMU -->
+              <span>TYLOO</span>
+              <!-- SEED / POŘADÍ, např. "#1" -->
+              <span class="team-seed">Group C</span>
+        </div>
+            <div class="team-row">
+              <!-- NÁZEV TÝMU -->
+              <span>JD Gaming</span>
+              <!-- SEED / POŘADÍ, např. "#1" -->
+              <span class="team-seed">Group A</span>
+        </div>
+            <div class="team-row">
+              <!-- NÁZEV TÝMU -->
+              <span>EDward Gaming</span>
+              <!-- SEED / POŘADÍ, např. "#1" -->
+              <span class="team-seed">Group B</span>
+        </div>
+            <div class="team-row">
+              <!-- NÁZEV TÝMU -->
+              <span>Xi Lai Gaming</span>
+              <!-- SEED / POŘADÍ, např. "#1" -->
+              <span class="team-seed">Group D</span>
+        </div>
+            <div class="team-row">
+              <!-- NÁZEV TÝMU -->
+              <span>Karmine Corp</span>
+              <!-- SEED / POŘADÍ, např. "#1" -->
+              <span class="team-seed">Group D</span>
+        </div>
+            <div class="team-row">
+              <!-- NÁZEV TÝMU -->
+              <span>Team Liquid</span>
+              <!-- SEED / POŘADÍ, např. "#1" -->
+              <span class="team-seed">Group C</span>
+        </div>
+            <div class="team-row">
+              <!-- NÁZEV TÝMU -->
+              <span>FUT Esports</span>
+              <!-- SEED / POŘADÍ, např. "#1" -->
+              <span class="team-seed">Group A</span>
+        </div>
+            <div class="team-row">
+              <!-- NÁZEV TÝMU -->
+              <span>Team Vitality</span>
+              <!-- SEED / POŘADÍ, např. "#1" -->
+              <span class="team-seed">Group B</span>
+        </div>
+            <div class="team-row">
+              <!-- NÁZEV TÝMU -->
+              <span>Global Esports</span>
+              <!-- SEED / POŘADÍ, např. "#1" -->
+              <span class="team-seed">Group B</span>
+        </div>
+            <div class="team-row">
+              <!-- NÁZEV TÝMU -->
+              <span>Nongshim RedForce</span>
+              <!-- SEED / POŘADÍ, např. "#1" -->
+              <span class="team-seed">Group D</span>
+        </div>
+            <div class="team-row">
+              <!-- NÁZEV TÝMU -->
+              <span>Paper Rex</span>
+              <!-- SEED / POŘADÍ, např. "#1" -->
+              <span class="team-seed">Group C</span>
+        </div>
+            <div class="team-row">
+              <!-- NÁZEV TÝMU -->
+              <span>T1</span>
+              <!-- SEED / POŘADÍ, např. "#1" -->
+              <span class="team-seed">Group A</span>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Last updated: 27. 9. 2026 Sponsor: ZENTRAX E-Sports Proudly made in Czech Republic
+  <!-- PATIČKA -->
+</footer>
+
+</body>
+</html>
